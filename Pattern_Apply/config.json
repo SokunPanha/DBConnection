@@ -1,0 +1,7 @@
+{
+  "SQL": {
+    "Server": "KALI\\SQLEXPRESS",
+    "Database": "POS_Book",
+    "IntegratedSecurity": true
+  }
+}
