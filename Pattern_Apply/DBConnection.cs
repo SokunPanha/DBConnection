@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace Pattern_Apply
 {
@@ -7,19 +8,19 @@ namespace Pattern_Apply
     {
 
         // Create an instance of SqlDatabaseFactory
-        private readonly SqlDatabaseFactory sqlfactory;
-        // Use the IDatabaseFactory to create a connection string
+        private readonly SqlDatabaseStrategy sqlDatabase;
         private string connectionString;
 
         private Sql sql;
         private SqlAdapter sql_adapter;
+
         private DatabaseInteraction database;
         private static DBConnection? instance;
 
         private DBConnection(string DBType)
         {
-            this.sqlfactory = new SqlDatabaseFactory(DBType!);
-            this.connectionString = this.sqlfactory.GetDatabaseObject();
+            this.sqlDatabase = new SqlDatabaseStrategy();
+            this.connectionString = this.sqlDatabase.CreateConnectionString();
             this.sql = new Sql(connectionString);
             this.sql_adapter = new SqlAdapter(this.sql);
             this.database = new DatabaseInteraction();
@@ -36,9 +37,9 @@ namespace Pattern_Apply
             
         }
 
-        public IDbConnection GetConnection()
+        public SqlConnection GetConnection()
         {
-            return database.GetConnection(this.sql_adapter);
+            return (SqlConnection)database.GetConnection(this.sql_adapter);
         }
     }
 }

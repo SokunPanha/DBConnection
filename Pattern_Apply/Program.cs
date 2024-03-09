@@ -7,7 +7,23 @@ namespace Pattern_Apply
     {
         static void Main(string[] args)
         {
-            DBConnection DBinstance = DBConnection.GetInstance("sql");
+            // Create instances of Product and Customer
+            Product newProduct = new Product { Id = 10, Name = "New Laptop", AuthorName = "Jack" };
+            Customer newCustomer = new Customer { Id = 1, Name = "John Doe" };
+
+            // Create instances of ProductStrategy and CustomerStrategy
+            ProductStrategy productStrategy = new ProductStrategy();
+            CustomerStrategy customerStrategy = new CustomerStrategy();
+
+            // Create CrudService instances for Product and Customer
+            CrudService<Product> productCrudService = new CrudService<Product>(productStrategy);
+            CrudService<Customer> customerCrudService = new CrudService<Customer>(customerStrategy);
+
+            // Use CrudService to perform CRUD operations
+            productCrudService.Create(newProduct);
+            customerCrudService.Create(newCustomer);
+
+            /*DBConnection DBinstance = DBConnection.GetInstance("sql");
             IDbConnection con = DBinstance.GetConnection();
             try
             {
@@ -46,7 +62,8 @@ namespace Pattern_Apply
             }
         }
 
-
+*/
+        }
 
     
     }
