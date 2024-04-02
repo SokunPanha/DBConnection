@@ -108,13 +108,5 @@ namespace Pattern_Apply
         public bool IntegratedSecurity { get; set; }
     }
 
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            DatabaseString databaseString = new DatabaseString();
-            string connectionString = databaseString.CreateConnection(DatabaseType.SQL);
-            Console.WriteLine("Connection String: " + connectionString);
-        }
-    }
+   
 }
