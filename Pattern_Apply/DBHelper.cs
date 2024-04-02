@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Newtonsoft.Json;
 using MySql.Data.MySqlClient;
@@ -6,39 +6,60 @@ using System.Data.SqlClient;
 
 namespace Pattern_Apply
 {
-    public abstract class  IDatabaseStrategy
+    public interface IDatabaseStrategy
     {
-      protected DatabaseSettings databaseSetting;
+        string Execute(DatabaseSettings databaseSettings);
+    }
 
-      protected IDatabaseStrategy() { 
-        this.databaseSetting = JsonToObjectConvert();
-        }
-      protected DatabaseSettings JsonToObjectConvert()
+    public class DatabaseString
+    {
+        private IDatabaseStrategy databaseStrategy;
+
+        public DatabaseString()
         {
-            string json = File.ReadAllText("E:\\01 OOAD Assignment\\Pattern_Apply\\Pattern_Apply\\config.json");
-            DatabaseSettings databaseSetting = JsonConvert.DeserializeObject<DatabaseSettings>(json)!;
-            return databaseSetting;
-
+            this.databaseStrategy = null!;
         }
-        public  abstract string CreateConnectionString();
+
+        public string CreateConnection(DatabaseType databaseType)
+        {
+            DatabaseSettings databaseSettings = ReadSettingsFromJson();
+            SetDatabaseStrategy(databaseType);
+
+            return databaseStrategy.Execute(databaseSettings);
+        }
+
+        private void SetDatabaseStrategy(DatabaseType databaseType)
+        {
+            switch (databaseType)
+            {
+                case DatabaseType.SQL:
+                    databaseStrategy = new SqlDatabaseStrategy();
+                    break;
+                case DatabaseType.MySQL:
+                    databaseStrategy = new MySqlDatabaseStrategy();
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported database type");
+            }
+        }
+
+        private DatabaseSettings ReadSettingsFromJson()
+        {
+            string jsonFilePath = "E:\\01 OOAD Assignment\\Pattern_Apply\\Pattern_Apply\\config.json";
+            string json = File.ReadAllText(jsonFilePath);
+            return JsonConvert.DeserializeObject<DatabaseSettings>(json)!;
+        }
     }
 
     public class SqlDatabaseStrategy : IDatabaseStrategy
     {
-        private SqlSettings sqlSettings;
-
-        public SqlDatabaseStrategy()
-        {
-            this.sqlSettings = databaseSetting.SQL!;
-        }
-
-        public override string CreateConnectionString()
+        public string Execute(DatabaseSettings databaseSettings)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder
             {
-                DataSource = sqlSettings.Server,
-                InitialCatalog = sqlSettings.Database,
-                IntegratedSecurity = sqlSettings.IntegratedSecurity
+                DataSource = databaseSettings.SQL!.Server,
+                InitialCatalog = databaseSettings.SQL.Database,
+                IntegratedSecurity = databaseSettings.SQL.IntegratedSecurity
             };
 
             return builder.ToString();
@@ -47,20 +68,13 @@ namespace Pattern_Apply
 
     public class MySqlDatabaseStrategy : IDatabaseStrategy
     {
-        private MySqlSettings mySqlSettings;
-
-        public MySqlDatabaseStrategy(MySqlSettings mySqlSettings)
-        {
-            this.mySqlSettings = mySqlSettings;
-        }
-
-        public override string CreateConnectionString()
+        public string Execute(DatabaseSettings databaseSettings)
         {
             MySqlConnectionStringBuilder builder = new MySqlConnectionStringBuilder
             {
-                Server = mySqlSettings.Server,
-                Database = mySqlSettings.Database,
-                IntegratedSecurity = mySqlSettings.IntegratedSecurity
+                Server = databaseSettings.MySQL!.Server,
+                Database = databaseSettings.MySQL.Database,
+                IntegratedSecurity = databaseSettings.MySQL.IntegratedSecurity
             };
 
             return builder.ToString();
@@ -74,13 +88,12 @@ namespace Pattern_Apply
         public MySqlSettings? MySQL { get; set; }
     }
 
-
     public enum DatabaseType
     {
         SQL,
-        MySQL,  // Add MySQL database type
-        // Remove MongoDB
+        MySQL
     }
+
     public class SqlSettings
     {
         public string? Server { get; set; }
@@ -95,9 +108,13 @@ namespace Pattern_Apply
         public bool IntegratedSecurity { get; set; }
     }
 
-
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            DatabaseString databaseString = new DatabaseString();
+            string connectionString = databaseString.CreateConnection(DatabaseType.SQL);
+            Console.WriteLine("Connection String: " + connectionString);
+        }
+    }
 }
-
-
-
-
